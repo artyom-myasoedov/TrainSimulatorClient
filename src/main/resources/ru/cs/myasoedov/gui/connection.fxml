@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+
+<AnchorPane fx:id="anchor" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.cs.myasoedov.gui.ControllerConnection">
+   <children>
+      <TextField fx:id="textFieldIp" layoutX="214.0" layoutY="70.0" promptText="Введите Ip" text="127.0.0.1">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </TextField>
+      <Text fx:id="labelIp" layoutX="175.0" layoutY="100.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Ip:">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Text>
+      <Text fx:id="labelPort" layoutX="165.0" layoutY="186.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Port:">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Text>
+      <TextField fx:id="textFieldPort" layoutX="214.0" layoutY="156.0" promptText="Введите порт" text="8001">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </TextField>
+      <Button fx:id="buttonConnect" layoutX="244.0" layoutY="253.0" mnemonicParsing="false" text="Подключиться">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Button>
+   </children>
+</AnchorPane>
