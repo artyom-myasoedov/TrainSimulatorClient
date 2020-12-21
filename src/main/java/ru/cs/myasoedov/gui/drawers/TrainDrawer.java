@@ -1,8 +1,10 @@
 package ru.cs.myasoedov.gui.drawers;
 
+import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
-import myasoedov.cs.models.abstractWagons.Wagon;
+import javafx.scene.text.Font;
 import myasoedov.cs.models.trains.Train;
+
 
 public class TrainDrawer {
     private AnchorPane pane;
@@ -22,9 +24,19 @@ public class TrainDrawer {
     }
 
 
-    public void draw(Train<? extends Wagon> train) {
-        train.getLocomotives().forEach(l -> wagonDrawer.draw(l, pane, 0));
-        train.getWagons().forEach(w -> wagonDrawer.draw(w, pane, train.getLocomotivesSize()));
+    public void draw(Train train) {
+        pane.getChildren().clear();
+        if (train != null) {
+            train.getLocomotives().forEach(l -> wagonDrawer.draw(l, pane, 0));
+            train.getWagons().forEach(w -> wagonDrawer.draw(w, pane, train.getLocomotivesSize()));
+        } else {
+            Label label = new Label("Пустой ангар");
+            label.setFont(Font.font(20));
+            label.setLayoutY(40);
+            label.setLayoutX(300);
+            pane.getChildren().add(label);
+        }
+
     }
 
     public WagonDrawer getWagonDrawer() {

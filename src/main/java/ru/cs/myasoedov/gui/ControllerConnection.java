@@ -1,16 +1,17 @@
 package ru.cs.myasoedov.gui;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.net.URL;
 import java.util.ResourceBundle;
+
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import ru.cs.myasoedov.client.Client;
+import ru.cs.myasoedov.utils.Utils;
 
 public class ControllerConnection {
 
@@ -42,7 +43,14 @@ public class ControllerConnection {
     void initialize() {
         checkAsserts();
         buttonConnect.setOnAction(e -> {
-            Utils.prepareStage(Main.primaryStage, getClass().getResource("main.fxml"), "Конструктор поездов", 1200, 600);
+            try {
+                Utils.prepareStage(Main.primaryStage, getClass().getResource("main.fxml"), "Конструктор поездов", 1350, 600);
+//                Main.currentClient.setConnection(new Socket(textFieldIp.getText(), Integer.parseInt(textFieldPort.getText())));
+   //             System.out.println("connected");
+            } catch (Exception exception) {
+                IOException exception1 = new IOException("Не удалось подключится к серверу!", exception);
+                Utils.alert(exception1);
+            }
         });
     }
 
