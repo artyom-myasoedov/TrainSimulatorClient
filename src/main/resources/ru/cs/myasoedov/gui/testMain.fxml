@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="mainAnchor" prefHeight="600.0" prefWidth="1350.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.cs.myasoedov.gui.ControllerMain">
+<AnchorPane fx:id="mainAnchor" prefHeight="600.0" prefWidth="1350.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.cs.myasoedov.gui.TestController">
     <children>
         <Button fx:id="buttonAddWagon" layoutX="21.0" layoutY="23.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="150.0" text="Добавить вагон">
             <font>
@@ -75,20 +75,20 @@
                 <Font size="16.0" />
             </font>
         </Button>
-        <Button fx:id="buttonLeaveRoom" layoutX="29.0" layoutY="531.0" mnemonicParsing="false" text="Отсоединиться">
+        <Button fx:id="ButtonLeaveRoom" layoutX="29.0" layoutY="531.0" mnemonicParsing="false" text="Отсоединиться">
             <font>
                 <Font size="16.0" />
             </font>
         </Button>
-      <Label fx:id="labelID" layoutX="193.0" layoutY="537.0" text="ID:">
-         <font>
-            <Font size="16.0" />
-         </font>
-      </Label>
-      <TextField fx:id="textFieldID" layoutX="238.0" layoutY="530.0" prefHeight="38.0" prefWidth="139.0" promptText="введите ID">
-         <font>
-            <Font size="16.0" />
-         </font>
-      </TextField>
+        <Label fx:id="labelID" layoutX="193.0" layoutY="537.0" text="ID:">
+            <font>
+                <Font size="16.0" />
+            </font>
+        </Label>
+        <TextField fx:id="textFieldID" layoutX="238.0" layoutY="530.0" prefHeight="38.0" prefWidth="139.0" promptText="введите ID">
+            <font>
+                <Font size="16.0" />
+            </font>
+        </TextField>
     </children>
 </AnchorPane>

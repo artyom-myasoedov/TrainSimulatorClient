@@ -1,30 +1,36 @@
 package ru.cs.myasoedov.gui;
 
+import java.io.IOException;
 import java.util.*;
 
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
-import javafx.util.Duration;
+import javafx.stage.Stage;
+import myasoedov.cs.Configs;
+import myasoedov.cs.factories.WagonFactory;
 import myasoedov.cs.models.abstractWagons.Locomotive;
+import myasoedov.cs.models.storages.Storage;
+import myasoedov.cs.models.trains.Train;
+import myasoedov.cs.storages.train.FreightTrainDBStorage;
+import myasoedov.cs.storages.train.PassengerTrainDBStorage;
 import myasoedov.cs.trains.FreightTrain;
 import myasoedov.cs.trains.PassengerTrain;
+import ru.cs.myasoedov.client.Session;
 import ru.cs.myasoedov.enums.Position;
 import ru.cs.myasoedov.enums.TrainType;
 import ru.cs.myasoedov.enums.WagonType;
 import ru.cs.myasoedov.gui.drawers.TrainDrawer;
 import ru.cs.myasoedov.utils.Utils;
 
-public class ControllerMain {
+public class TestController {
 
     @FXML
     private AnchorPane mainAnchor;
@@ -87,34 +93,29 @@ public class ControllerMain {
     private Button buttonLoadFromDB;
 
     @FXML
-    private Button buttonLeaveRoom;
+    private Button ButtonLeaveRoom;
 
-    public final static List<TrainDrawer> trainDrawers = new ArrayList<>();
+    private final static List<TrainDrawer> trainDrawers = new ArrayList<>();
     private final static List<WagonType> locomotiveTypes = new ArrayList<>();
     public final static List<WagonType> freightWagonTypes = new ArrayList<>();
     public final static List<WagonType> passengerWagonTypes = new ArrayList<>();
     private final static List<TrainType> trainTypes = new ArrayList<>();
     private final static List<Position> positions = new ArrayList<>();
     private final static List<TextField> textFields = new ArrayList<>();
+    public final static Storage<FreightTrain> freightStorage = new FreightTrainDBStorage(Configs.JDBC_URL, Configs.USER_NAME, Configs.USER_PAROL);
+    public final static Storage<PassengerTrain> passengerStorage = new PassengerTrainDBStorage(Configs.JDBC_URL, Configs.USER_NAME, Configs.USER_PAROL);
 
     @FXML
     void initialize() {
-        Main.controllerMain = this;
+        Main.testController = this;
         checkAsserts();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        /*
-        Main.currentClient.setSession(new Session(1));Map<Integer, Train> map = new HashMap<>();
+        Main.currentClient.setSession(new Session(1));
+        Map<Integer, Train> map = new HashMap<>();
         map.put(0, null);
         map.put(1, null);
         map.put(2, null);
         map.put(3, null);
         Main.currentClient.getSession().setTrains(map);
-        */
-
         initializeTrainDrawers(Main.currentClient.getMaxHangarNumbers());
         createIDs(Main.currentClient.getMaxHangarNumbers());
         fillChoiceCollections();
@@ -126,22 +127,10 @@ public class ControllerMain {
         buttonCreateTrain.setOnAction(this::createTrain);
         buttonSaveToDB.setOnAction(this::saveToDB);
         buttonLoadFromDB.setOnAction(this::loadFromDB);
-        buttonLeaveRoom.setOnAction(ControllerMain::disconnect);
 
 
         noteSelected();
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            final int[] i = {0};
-            try {
-                ControllerMain.trainDrawers.forEach(t -> t.draw(Main.currentClient.getSession().getTrains().get(i[0]++)));
-                changeChoiceBoxes();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }));
-        timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();
     }
 
     private void checkAsserts() {
@@ -163,7 +152,7 @@ public class ControllerMain {
         assert labelTrain != null : "fx:id=\"labelTrain\" was not injected: check your FXML file 'main.fxml'.";
         assert buttonSaveToDB != null : "fx:id=\"buttonSaveToDB\" was not injected: check your FXML file 'main.fxml'.";
         assert buttonLoadFromDB != null : "fx:id=\"buttonLoadFromDB\" was not injected: check your FXML file 'main.fxml'.";
-        assert buttonLeaveRoom != null : "fx:id=\"ButtonLeaveRoom\" was not injected: check your FXML file 'main.fxml'.";
+        assert ButtonLeaveRoom != null : "fx:id=\"ButtonLeaveRoom\" was not injected: check your FXML file 'main.fxml'.";
     }
 
     private void noteSelected() {
@@ -242,7 +231,6 @@ public class ControllerMain {
                 Main.currentClient.getTrain().addHeadWagon(Utils.createDefaultWagonByType(choiceBoxWagon.getValue()));
             else Main.currentClient.getTrain().addTailWagon(Utils.createDefaultWagonByType(choiceBoxWagon.getValue()));
 
-            Main.currentClient.sendUpdate();
             drawCurrent();
         } catch (Exception exception) {
             Exception exception1 = exception;
@@ -257,7 +245,6 @@ public class ControllerMain {
         try {
             Main.currentClient.getTrain().addLocomotive((Locomotive) Utils.createDefaultWagonByType(choiceBoxLocomotive.getValue()));
             drawCurrent();
-            Main.currentClient.sendUpdate();
         } catch (Exception exception) {
             Exception exception1 = exception;
             if (Main.currentClient.getTrain() == null) {
@@ -269,7 +256,7 @@ public class ControllerMain {
     }
 
     public static void drawCurrent() {
-        //trainDrawers.get(Main.currentClient.getHangarNumber()).draw(Main.currentClient.getTrain());
+        trainDrawers.get(Main.currentClient.getHangarNumber()).draw(Main.currentClient.getTrain());
     }
 
     public static void drawAll() {
@@ -281,7 +268,6 @@ public class ControllerMain {
         try {
             Main.currentClient.getTrain().unhookLocomotive();
             drawCurrent();
-            Main.currentClient.sendUpdate();
         } catch (Exception exception) {
             Exception exception1 = exception;
             if (Main.currentClient.getTrain() == null) {
@@ -301,7 +287,6 @@ public class ControllerMain {
             }
 
             drawCurrent();
-            Main.currentClient.sendUpdate();
         } catch (Exception exception) {
             Exception exception1 = exception;
             if (Main.currentClient.getTrain() == null) {
@@ -316,7 +301,6 @@ public class ControllerMain {
         try {
             Main.currentClient.clearTrain();
             drawCurrent();
-            Main.currentClient.sendUpdate();
         } catch (Exception exception) {
             Utils.alert(exception);
         }
@@ -336,7 +320,6 @@ public class ControllerMain {
             }
             textFields.get(Main.currentClient.getHangarNumber()).setText(Main.currentClient.getTrain().getId().toString());
             drawCurrent();
-            Main.currentClient.sendUpdate();
         } catch (Exception exception) {
             Utils.alert(exception);
         }
@@ -345,8 +328,12 @@ public class ControllerMain {
     private void saveToDB(ActionEvent e) {
         boolean isSaved = false;
         try {
-            Main.currentClient.sendSave();
-            isSaved = true;
+            Train train = Main.currentClient.getTrain();
+            if (train.getClass().equals(PassengerTrain.class)) {
+                isSaved = passengerStorage.save((PassengerTrain) train);
+            } else {
+                isSaved = freightStorage.save((FreightTrain) train);
+            }
         } catch (NullPointerException exception) {
             Utils.alert(new Exception("Нет поезда!", exception));
         } catch (Exception exception) {
@@ -359,33 +346,25 @@ public class ControllerMain {
     private void loadFromDB(ActionEvent e) {
         try {
             String str = textFieldID.getText();
-            if (str.equals("")) {
+            if (str.equals("") || Objects.equals(null, str)) {
                 throw new IllegalArgumentException("Недопустимый Id");
             }
-            Main.currentClient.setTrain(new PassengerTrain(UUID.fromString(str)));
-            Main.currentClient.sendLoad();
+            //Main.currentClient.setTrain(freightStorage.get(UUID.fromString(str)));
         } catch (Exception ioException) {
             Utils.alert(new Exception("Не удалось загрузить поезд!", ioException));
         }
     }
 
-    public void changeChoiceBoxes() {
-        if (Main.currentClient.getTrain() != null) {
-            if (Main.currentClient.getTrain().getClass().equals(FreightTrain.class)) {
-                choiceBoxWagon.setItems(FXCollections.observableList(freightWagonTypes));
-                choiceBoxWagon.setValue(WagonType.COVERED_WAGON);
-                choiceBoxTrainType.setValue(TrainType.FREIGHT);
-            } else {
-                choiceBoxWagon.setItems(FXCollections.observableList(passengerWagonTypes));
-                choiceBoxWagon.setValue(WagonType.COUPE_WAGON);
-                choiceBoxTrainType.setValue(TrainType.PASSENGER);
-            }
+    private void changeChoiceBoxes() {
+        if (Main.currentClient.getTrain().getClass().equals(FreightTrain.class)) {
+            choiceBoxWagon.setItems(FXCollections.observableList(freightWagonTypes));
+            choiceBoxWagon.setValue(WagonType.COVERED_WAGON);
+            choiceBoxTrainType.setValue(TrainType.FREIGHT);
+        } else {
+            choiceBoxWagon.setItems(FXCollections.observableList(passengerWagonTypes));
+            choiceBoxWagon.setValue(WagonType.COUPE_WAGON);
+            choiceBoxTrainType.setValue(TrainType.PASSENGER);
         }
-    }
-
-    private static void disconnect(ActionEvent e) {
-        Main.currentClient.initiateClose();
-        Utils.prepareStage(Main.primaryStage, Main.class.getResource("connection.fxml"), "Подключение", 600, 400);
     }
 
 }

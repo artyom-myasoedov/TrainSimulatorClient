@@ -2,23 +2,20 @@ package ru.cs.myasoedov.client;
 
 import myasoedov.cs.models.trains.Train;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class Session {
     private Integer currentHangar;
-    private Integer numberOfHangars;
-    private Train[] trains;
+    private Map<Integer, Train> trains;
 
     public Session() {
-
     }
 
     public Session(Integer currentHangar) {
         this.currentHangar = currentHangar;
-    }
-
-    public Session(Integer currentHangar, Integer numberOfHangars) {
-        this.currentHangar = currentHangar;
-        this.numberOfHangars = numberOfHangars;
-        trains = new Train[numberOfHangars];
+        trains = new ConcurrentHashMap<>();
     }
 
     public Integer getCurrentHangar() {
@@ -30,18 +27,14 @@ public class Session {
     }
 
     public Integer getNumberOfHangars() {
-        return numberOfHangars;
+        return trains.values().size();
     }
 
-    public void setNumberOfHangars(Integer numberOfHangars) {
-        this.numberOfHangars = numberOfHangars;
-    }
-
-    public Train[] getTrains() {
+    public Map<Integer, Train> getTrains() {
         return trains;
     }
 
-    public void setTrains(Train[] trains) {
+    public void setTrains(Map<Integer, Train> trains) {
         this.trains = trains;
     }
 }

@@ -22,6 +22,7 @@ import myasoedov.cs.wagons.passengerWagons.SleepWagon;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class WagonDrawer {
 
@@ -45,6 +46,9 @@ public class WagonDrawer {
     }
 
     public Group draw(Wagon wagon, AnchorPane pane, int locomotiveNum) {
+        if (Objects.equals(wagon.getNumberInComposition(), null)) {
+            throw new NullPointerException("Отсутствуют номера вагонов");
+        }
         Group group = new Group();
         Rectangle rect = new Rectangle(150, 72, 10, 8);
         rect.setFill(Color.BROWN);

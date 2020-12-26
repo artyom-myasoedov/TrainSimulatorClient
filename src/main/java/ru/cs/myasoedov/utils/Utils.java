@@ -35,14 +35,14 @@ public final class Utils {
         alert.setTitle("Ошибка!");
         alert.setHeaderText(throwable.getMessage());
         throwable.printStackTrace();
-        alert.show();
+        alert.showAndWait();
     }
 
     public static void alert(String mes) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Внимание!");
         alert.setHeaderText(mes);
-        alert.show();
+        alert.showAndWait();
     }
 
     public static Wagon createDefaultWagonByType(WagonType wagonType) {
