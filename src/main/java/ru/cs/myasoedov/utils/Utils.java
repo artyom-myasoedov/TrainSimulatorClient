@@ -42,7 +42,7 @@ public final class Utils {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Внимание!");
         alert.setHeaderText(mes);
-        alert.showAndWait();
+        alert.show();
     }
 
     public static Wagon createDefaultWagonByType(WagonType wagonType) {

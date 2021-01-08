@@ -1,11 +1,11 @@
 package ru.cs.myasoedov.gui;
 
+import java.io.IOException;
 import java.util.*;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -18,6 +18,7 @@ import javafx.util.Duration;
 import myasoedov.cs.models.abstractWagons.Locomotive;
 import myasoedov.cs.trains.FreightTrain;
 import myasoedov.cs.trains.PassengerTrain;
+import ru.cs.myasoedov.client.Client;
 import ru.cs.myasoedov.enums.Position;
 import ru.cs.myasoedov.enums.TrainType;
 import ru.cs.myasoedov.enums.WagonType;
@@ -96,27 +97,22 @@ public class ControllerMain {
     private final static List<TrainType> trainTypes = new ArrayList<>();
     private final static List<Position> positions = new ArrayList<>();
     private final static List<TextField> textFields = new ArrayList<>();
+    private Timeline updateFrame;
+    private Timeline checkDisconnect;
 
     @FXML
     void initialize() {
         Main.controllerMain = this;
+        Main.currentClient.process();
+
         checkAsserts();
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        /*
-        Main.currentClient.setSession(new Session(1));Map<Integer, Train> map = new HashMap<>();
-        map.put(0, null);
-        map.put(1, null);
-        map.put(2, null);
-        map.put(3, null);
-        Main.currentClient.getSession().setTrains(map);
-        */
-
         initializeTrainDrawers(Main.currentClient.getMaxHangarNumbers());
-        createIDs(Main.currentClient.getMaxHangarNumbers());
+        createID(Main.currentClient.getHangarNumber());
         fillChoiceCollections();
         buttonAddWagon.setOnAction(this::addWagon);
         buttonAddLocomotive.setOnAction(this::addLocomotive);
@@ -131,17 +127,28 @@ public class ControllerMain {
 
         noteSelected();
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            final int[] i = {0};
-            try {
-                ControllerMain.trainDrawers.forEach(t -> t.draw(Main.currentClient.getSession().getTrains().get(i[0]++)));
-                changeChoiceBoxes();
-            } catch (Exception ex) {
-                ex.printStackTrace();
+        startAnimation();
+        checkDisconnet();
+    }
+
+    private void checkDisconnet() {
+        checkDisconnect = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            if (!Main.currentClient.isConnected()) {
+                updateFrame.stop();
+                checkDisconnect.stop();
+                Main.currentClient = new Client();
+                Utils.alert("Вы отключены");
+                Utils.prepareStage(Main.primaryStage, Main.class.getResource("connection.fxml"), "Подключение", 600, 400);
             }
         }));
-        timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();
+        checkDisconnect.setCycleCount(Animation.INDEFINITE);
+        checkDisconnect.play();
+    }
+
+    private void startAnimation() {
+        updateFrame = new Timeline(new KeyFrame(Duration.seconds(1), e -> drawAll()));
+        updateFrame.setCycleCount(Animation.INDEFINITE);
+        updateFrame.play();
     }
 
     private void checkAsserts() {
@@ -187,6 +194,7 @@ public class ControllerMain {
     }
 
     private void initializeTrainDrawers(int maxNumberClients) {
+        trainDrawers.clear();
         for (int i = 0; i < maxNumberClients; i++) {
             trainDrawers.add(new TrainDrawer((AnchorPane) createHangar(i).getContent()));
         }
@@ -194,6 +202,12 @@ public class ControllerMain {
     }
 
     private void fillChoiceCollections() {
+//        positions.clear();
+//        passengerWagonTypes.clear();
+//        freightWagonTypes.clear();
+//        locomotiveTypes.clear();
+//        trainDrawers.clear();
+//        trainTypes.clear();
         passengerWagonTypes.add(WagonType.COUPE_WAGON);
         freightWagonTypes.add(WagonType.COVERED_WAGON);
         freightWagonTypes.add(WagonType.PLATFORM_WAGON);
@@ -219,21 +233,20 @@ public class ControllerMain {
         choiceBoxTrainType.setValue(TrainType.PASSENGER);
     }
 
-    private void createIDs(int num) {
-        for (int i = 0; i < num; i++) {
-            Label label = new Label("ID:");
-            label.setFont(Font.font(12));
-            label.setLayoutX(1220);
-            label.setLayoutY(40 + i * 120);
-            TextField textField = new TextField();
-            textField.setLayoutX(1220);
-            textField.setLayoutY(60 + i * 120);
-            textField.setFont(Font.font(12));
-            textField.setPrefWidth(100);
-            textField.setEditable(false);
-            mainAnchor.getChildren().addAll(textField, label);
-            textFields.add(textField);
-        }
+    private void createID(int num) {
+        Label label = new Label("ID:");
+        label.setFont(Font.font(12));
+        label.setLayoutX(1220);
+        label.setLayoutY(40 + num * 120);
+        TextField textField = new TextField();
+        textField.setLayoutX(1220);
+        textField.setLayoutY(60 + num * 120);
+        textField.setFont(Font.font(12));
+        textField.setPrefWidth(100);
+        textField.setEditable(false);
+        mainAnchor.getChildren().addAll(textField, label);
+        textFields.clear();
+        textFields.add(textField);
     }
 
     private void addWagon(ActionEvent e) {
@@ -243,7 +256,6 @@ public class ControllerMain {
             else Main.currentClient.getTrain().addTailWagon(Utils.createDefaultWagonByType(choiceBoxWagon.getValue()));
 
             Main.currentClient.sendUpdate();
-            drawCurrent();
         } catch (Exception exception) {
             Exception exception1 = exception;
             if (Main.currentClient.getTrain() == null) {
@@ -256,7 +268,6 @@ public class ControllerMain {
     private void addLocomotive(ActionEvent e) {
         try {
             Main.currentClient.getTrain().addLocomotive((Locomotive) Utils.createDefaultWagonByType(choiceBoxLocomotive.getValue()));
-            drawCurrent();
             Main.currentClient.sendUpdate();
         } catch (Exception exception) {
             Exception exception1 = exception;
@@ -268,9 +279,6 @@ public class ControllerMain {
 
     }
 
-    public static void drawCurrent() {
-        //trainDrawers.get(Main.currentClient.getHangarNumber()).draw(Main.currentClient.getTrain());
-    }
 
     public static void drawAll() {
         final int[] i = {0};
@@ -280,7 +288,6 @@ public class ControllerMain {
     private void unhookLocomotive(ActionEvent e) {
         try {
             Main.currentClient.getTrain().unhookLocomotive();
-            drawCurrent();
             Main.currentClient.sendUpdate();
         } catch (Exception exception) {
             Exception exception1 = exception;
@@ -300,7 +307,6 @@ public class ControllerMain {
                 Main.currentClient.getTrain().unhookTailWagon();
             }
 
-            drawCurrent();
             Main.currentClient.sendUpdate();
         } catch (Exception exception) {
             Exception exception1 = exception;
@@ -315,7 +321,6 @@ public class ControllerMain {
     private void clearHangar(ActionEvent e) {
         try {
             Main.currentClient.clearTrain();
-            drawCurrent();
             Main.currentClient.sendUpdate();
         } catch (Exception exception) {
             Utils.alert(exception);
@@ -334,8 +339,8 @@ public class ControllerMain {
                 choiceBoxWagon.setItems(FXCollections.observableList(freightWagonTypes));
                 choiceBoxWagon.setValue(WagonType.COVERED_WAGON);
             }
-            textFields.get(Main.currentClient.getHangarNumber()).setText(Main.currentClient.getTrain().getId().toString());
-            drawCurrent();
+            textFields.get(0).setText(Main.currentClient.getTrain().getId().toString());
+            changeChoiceBoxes();
             Main.currentClient.sendUpdate();
         } catch (Exception exception) {
             Utils.alert(exception);
@@ -345,6 +350,9 @@ public class ControllerMain {
     private void saveToDB(ActionEvent e) {
         boolean isSaved = false;
         try {
+            if (Main.currentClient.getTrain() == null) {
+                throw new NullPointerException("Нет поезда!");
+            }
             Main.currentClient.sendSave();
             isSaved = true;
         } catch (NullPointerException exception) {
@@ -364,6 +372,10 @@ public class ControllerMain {
             }
             Main.currentClient.setTrain(new PassengerTrain(UUID.fromString(str)));
             Main.currentClient.sendLoad();
+
+            Timeline tm = new Timeline(new KeyFrame(Duration.seconds(1), ev -> changeChoiceBoxes()));
+            tm.setCycleCount(3);
+            tm.play();
         } catch (Exception ioException) {
             Utils.alert(new Exception("Не удалось загрузить поезд!", ioException));
         }
@@ -384,8 +396,15 @@ public class ControllerMain {
     }
 
     private static void disconnect(ActionEvent e) {
+        Main.currentClient.setConnected(false);
         Main.currentClient.initiateClose();
-        Utils.prepareStage(Main.primaryStage, Main.class.getResource("connection.fxml"), "Подключение", 600, 400);
+        positions.clear();
+        passengerWagonTypes.clear();
+        freightWagonTypes.clear();
+        locomotiveTypes.clear();
+        trainDrawers.clear();
+        trainTypes.clear();
+
     }
 
 }

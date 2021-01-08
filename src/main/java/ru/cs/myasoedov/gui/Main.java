@@ -5,16 +5,12 @@ import javafx.stage.Stage;
 import ru.cs.myasoedov.client.Client;
 import ru.cs.myasoedov.utils.Utils;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.util.Timer;
-import java.util.TimerTask;
 
 
 public class Main extends Application {
 
     static Stage primaryStage;
-    final static Client currentClient = new Client();
+    static Client currentClient = new Client();
     public static ControllerMain controllerMain;
     public static TestController testController;
     //--module-path
@@ -28,10 +24,7 @@ public class Main extends Application {
         Utils.prepareStage(primaryStage, getClass().getResource("connection.fxml"), "Подключение", 600, 400);
     }
 
-    public static void main(String[] args) throws IOException {
-
-        currentClient.setConnection(new Socket("localhost", 8001));
-        currentClient.process();
+    public static void main(String[] args) {
         launch();
     }
 }

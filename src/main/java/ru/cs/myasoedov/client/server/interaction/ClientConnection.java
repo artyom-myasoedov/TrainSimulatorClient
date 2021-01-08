@@ -17,44 +17,41 @@ public class ClientConnection {
         inputStream = new ObjectInputStream(socket.getInputStream());
     }
 
-    public DoubleContainer<String, Object> receive() throws Exception {
+    public DoubleContainer<String, Object> receive() {
         try {
-            return (DoubleContainer<String, Object>) inputStream.readObject();
-        } catch (ClassCastException e) {
-            throw new ClassCastException("Не получилось принять данные с сервера");
-        } catch (IOException | ClassNotFoundException e) {
-            throw new Exception("Не получилось принять данные с сервера", e);
+            DoubleContainer<String, Object> db = (DoubleContainer<String, Object>) inputStream.readObject();
+            return db;
+        } catch (ClassNotFoundException | ClassCastException | IOException e) {
+            throw new RuntimeException("Не получилось принять данные с сервера", e);
         }
     }
 
-    public void send(CommandAndHangar doubleContainer) throws IOException {
+    public void send(CommandAndHangar doubleContainer) {
         try {
-            synchronized (outputStream) {
-                outputStream.writeObject(doubleContainer);
-                outputStream.flush();
-            }
+            outputStream.writeObject(doubleContainer);
+            outputStream.flush();
         } catch (IOException e) {
-            throw new IOException("Ошибка при передачи данных", e);
+            throw new RuntimeException("Ошибка при передачи данных", e);
         }
     }
 
-    public boolean initiateClose() throws IOException {
+    public boolean initiateClose() {
         try {
-            CommandAndHangar commandAndHangar = new CommandAndHangar("disconnect", null);
-            outputStream.writeObject(commandAndHangar);
-            socket.close();
-            return true;
+            outputStream.writeObject(new CommandAndHangar("disconnect", null));
+            return close();
         } catch (IOException e) {
-            throw new IOException("Не получилось закрыть соединение", e);
+            throw new RuntimeException("Не получилось закрыть соединение", e);
         }
     }
 
-    public boolean close() throws Exception {
+    public boolean close() throws IOException {
         try {
             socket.close();
+            outputStream.close();
+            inputStream.close();
             return true;
         } catch (IOException e) {
-            throw new Exception("Не удалось закрыть соединение!");
+            throw new IOException("Не удалось закрыть соединение!");
         }
     }
 }

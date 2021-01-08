@@ -40,7 +40,7 @@ public class MainTest extends ApplicationTest {
     }
 
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stage) throws IOException, InterruptedException {
         Parent mainNode = FXMLLoader.load(Main.class.getResource("testMain.fxml"));
         stage.setScene(new Scene(mainNode));
         stage.show();
@@ -59,6 +59,8 @@ public class MainTest extends ApplicationTest {
         assertEquals(Main.currentClient.getTrain().getWagonsSize(),0);
         clickOn("#buttonAddLocomotive");
         assertEquals(Main.currentClient.getTrain().getLocomotivesSize(),1);
+        clickOn("#buttonAddLocomotive");
+        clickOn("#buttonAddLocomotive");
     }
 
     @Test
@@ -72,7 +74,7 @@ public class MainTest extends ApplicationTest {
     }
 
     @Test
-    public void testButtonAddWagon() {
+    public void testButtonAddWagon() throws InterruptedException {
         clickOn("#buttonCreateTrain");
         assertEquals(Main.currentClient.getTrain().getWagonsSize(),0);
         clickOn("#buttonAddWagon");
