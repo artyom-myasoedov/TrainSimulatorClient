@@ -1,2 +1,2 @@
 # TrainSimulatorClient
-Final version of task for the OOP course at VSU
+Final version of the client part of the task for the OOP course at VSU
